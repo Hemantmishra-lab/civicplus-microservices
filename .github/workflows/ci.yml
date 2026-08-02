@@ -36,6 +36,21 @@ jobs:
 
       # 🔥 DOCKER AUTO-PUSH STEPS START HERE 🔥
 
+      # 🔍 DEBUG STEP: Check if secrets are loaded properly
+      - name: Debug Secret Availability
+        run: |
+          if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then 
+            echo "❌ DOCKER_USERNAME IS EMPTY OR NOT FOUND"; 
+          else 
+            echo "✅ DOCKER_USERNAME IS SET"; 
+          fi
+
+          if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then 
+            echo "❌ DOCKER_PASSWORD IS EMPTY OR NOT FOUND"; 
+          else 
+            echo "✅ DOCKER_PASSWORD IS SET"; 
+          fi
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
