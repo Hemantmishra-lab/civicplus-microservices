@@ -1,0 +1,6 @@
+ALTER TABLE user_profiles 
+ADD COLUMN department VARCHAR(100),
+ADD COLUMN role VARCHAR(50),
+ADD COLUMN latitude DOUBLE,
+ADD COLUMN longitude DOUBLE,
+ADD COLUMN nationality VARCHAR(100);

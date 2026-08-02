@@ -1,0 +1,3 @@
+ALTER TABLE user_profiles
+ADD COLUMN area VARCHAR(100),
+ADD COLUMN district VARCHAR(100);

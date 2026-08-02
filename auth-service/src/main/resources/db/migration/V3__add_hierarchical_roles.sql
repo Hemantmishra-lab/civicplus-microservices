@@ -1,0 +1,7 @@
+-- Add hierarchical roles
+INSERT INTO roles (name) VALUES 
+('ROLE_DEPARTMENTAL_OFFICER'), 
+('ROLE_HEAD_OFFICER'), 
+('ROLE_AREA_INCHARGE'), 
+('ROLE_DISTRICT'), 
+('ROLE_HEADQUARTER');

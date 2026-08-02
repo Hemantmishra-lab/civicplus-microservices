@@ -1,0 +1,263 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # Infrastructure Services
+  # ==========================================
+  mysql:
+    image: mysql:8.0
+    container_name: civicplus-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: civicplus_db
+      MYSQL_USER: civicplus_user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - civicplus-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: civicplus-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - civicplus-network
+    restart: unless-stopped
+
+  kafka:
+    image: apache/kafka:3.7.1
+    container_name: civicplus-kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    networks:
+      - civicplus-network
+
+  minio:
+    image: minio/minio:RELEASE.2024-07-04T14-25-45Z
+    container_name: civicplus-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - civicplus-network
+    restart: unless-stopped
+
+  civicplus-minio-init:
+    image: minio/mc:latest
+    container_name: civicplus-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin); do
+        echo 'Waiting for MinIO to startup...'
+        sleep 2
+      done;
+      /usr/bin/mc mb myminio/civicplus-bucket --ignore-existing;
+      /usr/bin/mc anonymous set public myminio/civicplus-bucket;
+      exit 0;
+      "
+    networks:
+      - civicplus-network
+
+  # ==========================================
+  # Core Spring Cloud Services
+  # ==========================================
+  config-server:
+    build:
+      context: ./config-server
+    container_name: civicplus-config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - civicplus-network
+
+  discovery-server:
+    build:
+      context: ./discovery-server
+    container_name: civicplus-discovery-server
+    ports:
+      - "8761:8761"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+    networks:
+      - civicplus-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: civicplus-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+    networks:
+      - civicplus-network
+
+  # ==========================================
+  # Domain Microservices
+  # ==========================================
+  auth-service:
+    build:
+      context: ./auth-service
+    container_name: civicplus-auth-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/auth_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    networks:
+      - civicplus-network
+
+  user-service:
+    build:
+      context: ./user-service
+    container_name: civicplus-user-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/user_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    networks:
+      - civicplus-network
+
+  complaint-service:
+    build:
+      context: ./complaint-service
+    container_name: civicplus-complaint-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/complaint_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    networks:
+      - civicplus-network
+
+  department-service:
+    build:
+      context: ./department-service
+    container_name: civicplus-department-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/department_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    networks:
+      - civicplus-network
+
+  media-service:
+    build:
+      context: ./media-service
+    container_name: civicplus-media-service
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      MINIO_URL: http://minio:9000
+    depends_on:
+      - discovery-server
+      - minio
+    networks:
+      - civicplus-network
+
+  notification-service:
+    build:
+      context: ./notification-service
+    container_name: civicplus-notification-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/notification_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    networks:
+      - civicplus-network
+
+  analytics-service:
+    build:
+      context: ./analytics-service
+    container_name: civicplus-analytics-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/analytics_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    networks:
+      - civicplus-network
+
+  # ==========================================
+  # Frontend
+  # ==========================================
+  frontend:
+    build:
+      context: ./frontend
+    container_name: civicplus-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - civicplus-network
+
+networks:
+  civicplus-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
+  minio_data:
