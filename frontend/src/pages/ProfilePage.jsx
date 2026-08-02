@@ -122,8 +122,6 @@ export default function ProfilePage() {
     <div className="mx-auto max-w-5xl space-y-12 pb-12 relative z-10">
       {/* Profile Header */}
       <GlassCard className="p-8 md:p-12 border-white/10 dark:border-white/5 relative overflow-hidden shadow-2xl bg-white/40 dark:bg-[#060b1e]/60 backdrop-blur-2xl" delay={0.1}>
-        <div className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 rounded-full bg-gradient-to-br from-orange-500/20 to-rose-500/20 blur-[100px] pointer-events-none animate-pulse duration-1000" />
-        <div className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 rounded-full bg-gradient-to-tr from-blue-500/20 to-cyan-500/20 blur-[100px] pointer-events-none animate-pulse delay-700 duration-1000" />
         
         <div className="flex flex-col md:flex-row items-center md:items-center gap-10 relative z-10">
           {/* Avatar */}

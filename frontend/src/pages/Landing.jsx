@@ -9,7 +9,6 @@ import Testimonials from '../components/landing/Testimonials';
 import FAQ from '../components/landing/FAQ';
 import Footer from '../components/landing/Footer';
 import SmartCityBackground from '../components/ui/SmartCityBackground';
-import FloatingVideoCard from '../components/ui/FloatingVideoCard';
 import FloatingNav from '../components/ui/FloatingNav';
 
 export default function Landing() {
@@ -24,9 +23,6 @@ export default function Landing() {
       <main className="relative z-10 w-full flex flex-col">
         <Hero />
         
-        {/* Placeholder for FloatingVideoCard to dock into */}
-        <div id="video-dock-target" className="relative z-20 w-full max-w-5xl mx-auto h-[50vh] md:h-[70vh] my-24 rounded-2xl" />
-        
         <About />
         <Features />
         <HowItWorks />
@@ -36,7 +32,6 @@ export default function Landing() {
       </main>
       
       <Footer />
-      <FloatingVideoCard />
       <FloatingNav />
     </div>
   );

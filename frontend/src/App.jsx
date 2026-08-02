@@ -15,7 +15,6 @@ import ProfilePage from './pages/ProfilePage'
 import PrivateRoute from './components/PrivateRoute'
 import { ThemeProvider } from './components/ThemeProvider'
 import { SmoothScroll } from './components/ui/SmoothScroll'
-import CustomCursor from './components/ui/CustomCursor'
 import GlobalSparkSystem from './components/ui/GlobalSparkSystem'
 
 function App() {
@@ -25,7 +24,6 @@ function App() {
     <Provider store={store}>
       <ThemeProvider>
         <SmoothScroll>
-          <CustomCursor />
           <GlobalSparkSystem />
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
