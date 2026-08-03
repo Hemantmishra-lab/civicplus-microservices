@@ -24,6 +24,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/notifications/ws-complaints/**").permitAll() // Allow WebSocket connections bypass
+                        .requestMatchers("/api/v1/newsletter/subscribe").permitAll()            // Public newsletter subscription
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
