@@ -34,9 +34,9 @@ jobs:
           npm install
           npm run build
 
-      #  DOCKER AUTO-PUSH STEPS START HERE
+      # 🔥 DOCKER AUTO-PUSH STEPS START HERE 🔥
 
-      #  DEBUG STEP: Check Secret Lengths
+      # 🔍 DEBUG STEP: Check Secret Lengths
       - name: Debug Secrets Format
         run: |
           echo "Username length: ${#DOCKER_USER}"
