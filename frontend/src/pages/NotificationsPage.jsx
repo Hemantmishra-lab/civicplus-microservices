@@ -1,4 +1,4 @@
-+import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchNotifications } from '../store/notificationSlice';
 import { Bell, Clock, Info, CheckCircle, AlertTriangle, Sparkles } from 'lucide-react';
