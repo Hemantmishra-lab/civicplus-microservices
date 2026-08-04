@@ -679,7 +679,7 @@ docker compose version
 Clone the repository:
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
+git clone https://github.com/Hemantmishra-lab/civicplus-microservices.git
 cd civicplus-microservices-main
 ```
 
