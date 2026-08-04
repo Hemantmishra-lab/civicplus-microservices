@@ -30,7 +30,6 @@ The architecture is designed around **separation of concerns, loose coupling, sc
 
 # 🏗️ System Architecture
 
-## 🏗️ System Architecture
 
 ```mermaid
 flowchart TD
@@ -115,18 +114,19 @@ click node_websocket "[https://github.com/hemantmishra-lab/civicplus-microservic
 click node_analytics "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/analytics-service/src/main/java/com/hemant/civicplus/analyticsservice/kafka/ComplaintEventConsumer.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/analytics-service/src/main/java/com/hemant/civicplus/analyticsservice/kafka/ComplaintEventConsumer.java)"
 click node_analytics_api "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/analytics-service/src/main/java/com/hemant/civicplus/analyticsservice/controller/AnalyticsController.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/analytics-service/src/main/java/com/hemant/civicplus/analyticsservice/controller/AnalyticsController.java)"
 
-classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
-classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
-classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
-classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
-classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
-classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
-classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
-class node_frontend,node_gateway toneBlue
-class node_config,node_discovery,node_auth,node_jwt,node_user,node_department,node_media toneAmber
-class node_complaint_api,node_complaint_app,node_complaint_data toneMint
-class node_kafka,node_notification,node_websocket,node_analytics,node_analytics_api toneRose
-class node_compose,node_minio toneIndigo 
+classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a;
+classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554;
+classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f;
+classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d;
+classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337;
+classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81;
+classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a;
+
+class node_frontend,node_gateway toneBlue;
+class node_config,node_discovery,node_auth,node_jwt,node_user,node_department,node_media toneAmber;
+class node_complaint_api,node_complaint_app,node_complaint_data toneMint;
+class node_kafka,node_notification,node_websocket,node_analytics,node_analytics_api toneRose;
+class node_compose,node_minio toneIndigo;
 ```
 
 ```text
