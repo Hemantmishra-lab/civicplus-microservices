@@ -30,6 +30,105 @@ The architecture is designed around **separation of concerns, loose coupling, sc
 
 # 🏗️ System Architecture
 
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+
+subgraph group_client["Client & Edge"]
+  node_frontend["React SPA<br/>Vite client<br/>[main.jsx]"]
+  node_gateway{{"API Gateway<br/>Spring Cloud Gateway"}}
+end
+
+subgraph group_platform["Platform Services"]
+  node_config["Config Server<br/>Spring Config"]
+  node_discovery["Discovery Server<br/>Eureka"]
+  node_auth["Auth Service<br/>identity service<br/>[AuthService.java]"]
+  node_jwt["JWT Security<br/>per-service security<br/>[JwtAuthFilter.java]"]
+  node_user["User Service<br/>profile service<br/>[UserService.java]"]
+  node_department["Department Service<br/>organization service"]
+  node_media["Media Service<br/>object media API"]
+end
+
+subgraph group_complaints["Complaint Lifecycle"]
+  node_complaint_api["Complaint API<br/>REST controller"]
+  node_complaint_app["Complaint Service<br/>application service"]
+  node_complaint_data[("Complaint Data<br/>MySQL lifecycle schema")]
+end
+
+subgraph group_events["Events & Insights"]
+  node_kafka["Kafka<br/>event stream"]
+  node_notification["Notification Service<br/>event consumer"]
+  node_websocket["STOMP/WebSocket<br/>realtime delivery"]
+  node_analytics["Analytics Service<br/>event consumer"]
+  node_analytics_api["Analytics API<br/>dashboard REST API"]
+end
+
+subgraph group_infra["Runtime Infrastructure"]
+  node_compose["Docker Compose<br/>local runtime<br/>[docker-compose.yml]"]
+  node_minio[("MinIO<br/>object storage")]
+end
+
+node_compose -->|"starts"| node_gateway
+node_compose -->|"provisions"| node_kafka
+node_compose -->|"provisions"| node_minio
+node_frontend -->|"REST API"| node_gateway
+node_frontend -->|"realtime updates"| node_websocket
+node_gateway -->|"routes"| node_auth
+node_gateway -->|"routes"| node_complaint_api
+node_gateway -->|"routes"| node_user
+node_gateway -->|"routes"| node_department
+node_gateway -->|"routes"| node_media
+node_gateway -->|"routes"| node_analytics_api
+node_config -.->|"central config"| node_gateway
+node_config -.->|"central config"| node_complaint_app
+node_discovery -.->|"service discovery"| node_gateway
+node_discovery -.->|"registers"| node_complaint_app
+node_auth -->|"issues tokens"| node_jwt
+node_jwt -.->|"protects"| node_complaint_api
+node_complaint_api -->|"lifecycle commands"| node_complaint_app
+node_complaint_app -->|"persists"| node_complaint_data
+node_complaint_app -.->|"profile lookup"| node_user
+node_complaint_app -.->|"officer assignment"| node_department
+node_media -->|"stores objects"| node_minio
+node_complaint_app -->|"publishes lifecycle events"| node_kafka
+node_kafka -->|"consumes events"| node_notification
+node_notification -->|"pushes notifications"| node_websocket
+node_kafka -->|"consumes events"| node_analytics
+node_analytics -->|"serves statistics"| node_analytics_api
+
+click node_compose "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/docker-compose.yml](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/docker-compose.yml)"
+click node_frontend "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/frontend/src/main.jsx](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/frontend/src/main.jsx)"
+click node_gateway "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/api-gateway/src/main/java/com/hemant/civicplus/apigateway/ApiGatewayApplication.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/api-gateway/src/main/java/com/hemant/civicplus/apigateway/ApiGatewayApplication.java)"
+click node_config "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/config-server/src/main/java/com/hemant/civicplus/configserver/ConfigServerApplication.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/config-server/src/main/java/com/hemant/civicplus/configserver/ConfigServerApplication.java)"
+click node_discovery "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/discovery-server/src/main/java/com/hemant/civicplus/discoveryserver/DiscoveryServerApplication.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/discovery-server/src/main/java/com/hemant/civicplus/discoveryserver/DiscoveryServerApplication.java)"
+click node_auth "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/auth-service/src/main/java/com/hemant/civicplus/authservice/application/AuthService.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/auth-service/src/main/java/com/hemant/civicplus/authservice/application/AuthService.java)"
+click node_jwt "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/complaint-service/src/main/java/com/hemant/civicplus/complaintservice/security/JwtAuthFilter.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/complaint-service/src/main/java/com/hemant/civicplus/complaintservice/security/JwtAuthFilter.java)"
+click node_user "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/user-service/src/main/java/com/hemant/civicplus/userservice/application/UserService.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/user-service/src/main/java/com/hemant/civicplus/userservice/application/UserService.java)"
+click node_department "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/department-service/src/main/java/com/hemant/civicplus/departmentservice/application/DepartmentService.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/department-service/src/main/java/com/hemant/civicplus/departmentservice/application/DepartmentService.java)"
+click node_media "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/media-service/src/main/java/com/hemant/civicplus/mediaservice/controller/MediaController.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/media-service/src/main/java/com/hemant/civicplus/mediaservice/controller/MediaController.java)"
+click node_complaint_api "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/complaint-service/src/main/java/com/hemant/civicplus/complaintservice/controller/ComplaintController.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/complaint-service/src/main/java/com/hemant/civicplus/complaintservice/controller/ComplaintController.java)"
+click node_complaint_app "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/complaint-service/src/main/java/com/hemant/civicplus/complaintservice/application/ComplaintService.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/complaint-service/src/main/java/com/hemant/civicplus/complaintservice/application/ComplaintService.java)"
+click node_complaint_data "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/complaint-service/src/main/resources/db/migration/V1__init_complaint_schema.sql](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/complaint-service/src/main/resources/db/migration/V1__init_complaint_schema.sql)"
+click node_notification "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/notification-service/src/main/java/com/hemant/civicplus/notificationservice/kafka/ComplaintEventListener.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/notification-service/src/main/java/com/hemant/civicplus/notificationservice/kafka/ComplaintEventListener.java)"
+click node_websocket "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/notification-service/src/main/java/com/hemant/civicplus/notificationservice/config/WebSocketConfig.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/notification-service/src/main/java/com/hemant/civicplus/notificationservice/config/WebSocketConfig.java)"
+click node_analytics "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/analytics-service/src/main/java/com/hemant/civicplus/analyticsservice/kafka/ComplaintEventConsumer.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/analytics-service/src/main/java/com/hemant/civicplus/analyticsservice/kafka/ComplaintEventConsumer.java)"
+click node_analytics_api "[https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/analytics-service/src/main/java/com/hemant/civicplus/analyticsservice/controller/AnalyticsController.java](https://github.com/hemantmishra-lab/civicplus-microservices/blob/main/analytics-service/src/main/java/com/hemant/civicplus/analyticsservice/controller/AnalyticsController.java)"
+
+classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
+classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
+classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
+classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
+classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+class node_frontend,node_gateway toneBlue
+class node_config,node_discovery,node_auth,node_jwt,node_user,node_department,node_media toneAmber
+class node_complaint_api,node_complaint_app,node_complaint_data toneMint
+class node_kafka,node_notification,node_websocket,node_analytics,node_analytics_api toneRose
+class node_compose,node_minio toneIndigo 
+```
+
 ```text
                          ┌──────────────────────────┐
                          │        React 19           │
