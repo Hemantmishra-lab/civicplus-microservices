@@ -31,6 +31,7 @@ The architecture is designed around **separation of concerns, loose coupling, sc
 # 🏗️ System Architecture
 
 
+
 ```mermaid
 flowchart TD
 
