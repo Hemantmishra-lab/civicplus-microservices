@@ -8,6 +8,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 public class AnalyticsServiceApplication {
     public static void main(String[] args) {
+
         SpringApplication.run(AnalyticsServiceApplication.class, args);
     }
 
