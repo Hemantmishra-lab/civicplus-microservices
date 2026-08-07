@@ -56,6 +56,20 @@ services:
     networks:
       - civicplus-network
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: civicplus-kafka-ui
+    ports:
+      - "7575:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    networks:
+      - civicplus-network
+    depends_on:
+      - kafka
+
+
   minio:
     image: minio/minio:RELEASE.2024-07-04T14-25-45Z
     container_name: civicplus-minio
