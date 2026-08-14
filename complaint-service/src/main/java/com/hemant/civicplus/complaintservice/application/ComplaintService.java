@@ -9,6 +9,7 @@ import com.hemant.civicplus.complaintservice.kafka.ComplaintEventPublisher;
 import com.hemant.civicplus.complaintservice.repository.ComplaintRepository;
 import com.hemant.civicplus.complaintservice.repository.StatusHistoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -20,18 +21,28 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings("null")
+@Slf4j
 public class ComplaintService {
 
     private final ComplaintRepository complaintRepository;
     private final StatusHistoryRepository statusHistoryRepository;
-
     private final ComplaintEventPublisher eventPublisher;
     private final RestTemplate restTemplate;
+    
+    // Inject components for programmatic caching
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final CacheKeyGenerator cacheKeyGenerator;
 
     @Transactional
     public ComplaintResponse createComplaint(Long citizenId, ComplaintRequest request) {
@@ -108,6 +119,8 @@ public class ComplaintService {
                 .build();
         eventPublisher.publishComplaintCreated(event);
 
+        evictComplaintCaches(citizenId);
+
         return mapToResponse(savedComplaint);
     }
 
@@ -143,6 +156,8 @@ public class ComplaintService {
                 .timestamp(LocalDateTime.now())
                 .build();
         eventPublisher.publishComplaintUpdated(event);
+
+        evictComplaintCaches(savedComplaint.getCitizenId());
 
         return mapToResponse(savedComplaint);
     }
@@ -222,6 +237,8 @@ public class ComplaintService {
                 .build();
         eventPublisher.publishComplaintUpdated(event);
 
+        evictComplaintCaches(savedComplaint.getCitizenId());
+
         return mapToResponse(savedComplaint);
     }
 
@@ -243,37 +260,160 @@ public class ComplaintService {
                 .build();
         statusHistoryRepository.save(history);
         
+        evictComplaintCaches(savedComplaint.getCitizenId());
+        
         return mapToResponse(savedComplaint);
     }
 
 
 
+    @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
     public List<ComplaintResponse> getComplaintsByCitizen(Long citizenId) {
-        return complaintRepository.findByCitizenId(citizenId).stream()
+        String cacheKey = cacheKeyGenerator.generateCitizenKey(citizenId);
+        
+        try {
+            Object cachedData = redisTemplate.opsForValue().get(cacheKey);
+            if (cachedData != null) {
+                log.info("Cache Hit for key: {}", cacheKey);
+                return (List<ComplaintResponse>) cachedData;
+            }
+            log.info("Cache Miss for key: {}", cacheKey);
+        } catch (Exception e) {
+            log.error("Redis error for key {}: {}", cacheKey, e.getMessage());
+        }
+        
+        List<ComplaintResponse> complaints = complaintRepository.findByCitizenId(citizenId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+                
+        try {
+            redisTemplate.opsForValue().set(cacheKey, complaints, 15, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("Redis error setting key {}: {}", cacheKey, e.getMessage());
+        }
+        
+        return complaints;
     }
 
+    @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
     public List<ComplaintResponse> getAssignedComplaints(Long officerId) {
-        return complaintRepository.findByAssignedTo(officerId).stream()
+        String cacheKey = cacheKeyGenerator.generateAssignedKey(officerId);
+        
+        try {
+            Object cachedData = redisTemplate.opsForValue().get(cacheKey);
+            if (cachedData != null) {
+                log.info("Cache Hit for key: {}", cacheKey);
+                return (List<ComplaintResponse>) cachedData;
+            }
+            log.info("Cache Miss for key: {}", cacheKey);
+        } catch (Exception e) {
+            log.error("Redis error for key {}: {}", cacheKey, e.getMessage());
+        }
+        
+        List<ComplaintResponse> complaints = complaintRepository.findByAssignedTo(officerId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+                
+        try {
+            redisTemplate.opsForValue().set(cacheKey, complaints, 15, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("Redis error setting key {}: {}", cacheKey, e.getMessage());
+        }
+        
+        return complaints;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Transactional(readOnly = true)
+    public Page<ComplaintResponse> searchComplaints(String status, String department, String area, int page, int size) {
+        // Generate Cache Key
+        String cacheKey = cacheKeyGenerator.generateSearchKey(status, department, area, page, size);
+        
+        try {
+            Object cachedData = redisTemplate.opsForValue().get(cacheKey);
+            if (cachedData != null) {
+                log.info("Cache Hit for key: {}", cacheKey);
+                return (Page<ComplaintResponse>) cachedData;
+            }
+            log.info("Cache Miss for key: {}", cacheKey);
+        } catch (Exception e) {
+            log.error("Redis error for key {}: {}", cacheKey, e.getMessage());
+        }
+        
+        // Cache Miss: Query Database
+        ComplaintStatus complaintStatus = status != null ? ComplaintStatus.valueOf(status.toUpperCase()) : null;
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Complaint> complaintsPage = complaintRepository.searchComplaints(complaintStatus, department, area, pageable);
+        
+        Page<ComplaintResponse> responsePage = complaintsPage.map(this::mapToResponse);
+        
+        // Save to Redis Cache for 15 minutes
+        try {
+            redisTemplate.opsForValue().set(cacheKey, responsePage, 15, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("Redis error setting key {}: {}", cacheKey, e.getMessage());
+        }
+        
+        return responsePage;
     }
 
     @Transactional(readOnly = true)
     public ComplaintResponse getComplaintById(Long id) {
+        String cacheKey = cacheKeyGenerator.generateComplaintIdKey(id);
+        
+        try {
+            Object cachedData = redisTemplate.opsForValue().get(cacheKey);
+            if (cachedData != null) {
+                log.info("Cache Hit for key: {}", cacheKey);
+                return (ComplaintResponse) cachedData;
+            }
+            log.info("Cache Miss for key: {}", cacheKey);
+        } catch (Exception e) {
+            log.error("Redis error for key {}: {}", cacheKey, e.getMessage());
+        }
+
         Complaint complaint = complaintRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Complaint not found"));
-        return mapToResponse(complaint);
+        ComplaintResponse response = mapToResponse(complaint);
+        
+        try {
+            redisTemplate.opsForValue().set(cacheKey, response, 15, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("Redis error setting key {}: {}", cacheKey, e.getMessage());
+        }
+        
+        return response;
     }
 
+    @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
     public List<ComplaintResponse> getAllComplaints() {
-        return complaintRepository.findAll().stream()
+        String cacheKey = cacheKeyGenerator.generateAllKey();
+        
+        try {
+            Object cachedData = redisTemplate.opsForValue().get(cacheKey);
+            if (cachedData != null) {
+                log.info("Cache Hit for key: {}", cacheKey);
+                return (List<ComplaintResponse>) cachedData;
+            }
+            log.info("Cache Miss for key: {}", cacheKey);
+        } catch (Exception e) {
+            log.error("Redis error for key {}: {}", cacheKey, e.getMessage());
+        }
+        
+        List<ComplaintResponse> complaints = complaintRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+                
+        try {
+            redisTemplate.opsForValue().set(cacheKey, complaints, 15, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("Redis error setting key {}: {}", cacheKey, e.getMessage());
+        }
+        
+        return complaints;
     }
 
     @Transactional(readOnly = true)
@@ -304,5 +444,32 @@ public class ComplaintService {
                 .updatedAt(complaint.getUpdatedAt())
                 .imageUrls(urls)
                 .build();
+    }
+
+    private void evictComplaintCaches(Long citizenId) {
+        try {
+            if (citizenId != null) {
+                String citizenKey = cacheKeyGenerator.generateCitizenKey(citizenId);
+                redisTemplate.delete(citizenKey);
+                log.info("Evicted Redis cache for key: {}", citizenKey);
+                
+                List<ComplaintResponse> citizenComplaints = complaintRepository.findByCitizenId(citizenId).stream()
+                        .map(this::mapToResponse)
+                        .collect(Collectors.toList());
+                redisTemplate.opsForValue().set(citizenKey, citizenComplaints, 15, TimeUnit.MINUTES);
+                log.info("Repopulated Redis cache for key: {}", citizenKey);
+            }
+            String allKey = cacheKeyGenerator.generateAllKey();
+            redisTemplate.delete(allKey);
+            log.info("Evicted Redis cache for key: {}", allKey);
+            
+            List<ComplaintResponse> allComplaints = complaintRepository.findAll().stream()
+                    .map(this::mapToResponse)
+                    .collect(Collectors.toList());
+            redisTemplate.opsForValue().set(allKey, allComplaints, 15, TimeUnit.MINUTES);
+            log.info("Repopulated Redis cache for key: {}", allKey);
+        } catch (Exception e) {
+            log.error("Failed to evict/repopulate Redis cache: {}", e.getMessage());
+        }
     }
 }

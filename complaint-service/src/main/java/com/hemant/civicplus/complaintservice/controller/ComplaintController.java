@@ -51,6 +51,16 @@ public class ComplaintController {
         return ResponseEntity.ok(complaintService.getAllComplaints());
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<org.springframework.data.domain.Page<ComplaintResponse>> searchComplaints(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String area,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(complaintService.searchComplaints(status, department, area, page, size));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ComplaintResponse> getComplaintById(@PathVariable Long id) {
         return ResponseEntity.ok(complaintService.getComplaintById(id));

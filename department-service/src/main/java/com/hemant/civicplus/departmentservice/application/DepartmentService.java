@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +41,7 @@ public class DepartmentService {
     }
 
     @Transactional
+    @CacheEvict(value = "departments", key = "#departmentId")
     @SuppressWarnings("null")
     public DepartmentResponse assignHead(Long departmentId, Long headId) {
         Department department = departmentRepository.findById(departmentId)
@@ -69,6 +72,14 @@ public class DepartmentService {
         return departmentRepository.findAll().stream()
                 .map(this::mapToDepartmentResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "departments", key = "#id")
+    public DepartmentResponse getDepartmentById(Long id) {
+        Department department = departmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+        return mapToDepartmentResponse(department);
     }
 
     @Transactional(readOnly = true)

@@ -183,7 +183,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/complaint_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_HOST: civicplus-redis
     depends_on:
       mysql:
         condition: service_healthy

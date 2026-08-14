@@ -42,6 +42,11 @@ public class DepartmentController {
         return ResponseEntity.ok(departmentService.getAllDepartments());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<DepartmentResponse> getDepartmentById(@PathVariable Long id) {
+        return ResponseEntity.ok(departmentService.getDepartmentById(id));
+    }
+
     @GetMapping("/officers/{userId}")
     public ResponseEntity<OfficerResponse> getOfficer(@PathVariable Long userId) {
         return ResponseEntity.ok(departmentService.getOfficerByUserId(userId));
