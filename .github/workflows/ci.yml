@@ -21,7 +21,9 @@ jobs:
           cache: maven
 
       - name: Build Backend Microservices
-        run: ./mvnw clean package -DskipTests
+        run: |
+          chmod +x ./mvnw
+          ./mvnw clean package -DskipTests
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,9 +36,9 @@ jobs:
           npm install
           npm run build
 
-      #  DOCKER AUTO-PUSH STEPS START HERE
+      # DOCKER AUTO-PUSH STEPS START HERE
 
-      #  DEBUG STEP: Check Secret Lengths
+      # DEBUG STEP: Check Secret Lengths
       - name: Debug Secrets Format
         run: |
           echo "Username length: ${#DOCKER_USER}"
