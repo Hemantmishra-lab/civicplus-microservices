@@ -1,12 +1,29 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Globe, ArrowRight } from 'lucide-react';
-import { AnimatedButton } from '../ui/AnimatedButton';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export default function Footer() {
+  const [email, setEmail] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    if (!email) return;
+
+    // Process subscription here (e.g., API call)
+
+    // Show success message and clear input
+    setIsSubmitted(true);
+    setEmail('');
+
+    // Optional: Hide the success message after 3 seconds
+    setTimeout(() => {
+      setIsSubmitted(false);
+    }, 3000);
+  };
+
   return (
-    <motion.footer 
+    <motion.footer
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
@@ -21,7 +38,7 @@ export default function Footer() {
 
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
-          
+
           {/* Brand & Newsletter */}
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center gap-2 mb-4">
@@ -35,19 +52,40 @@ export default function Footer() {
             <p className="text-slate-300 max-w-md text-sm leading-relaxed font-medium">
               Transforming how citizens and city departments collaborate. Report issues, track progress, and build a better future together.
             </p>
-            
+
             <div className="pt-4">
               <h5 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Subscribe to Newsletter</h5>
-              <div className="flex gap-2 max-w-sm">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
+              <form onSubmit={handleSubscribe} className="flex gap-2 max-w-sm">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Enter your email"
                   className="flex-1 bg-white/10 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 shadow-inner placeholder-slate-400"
                 />
-                <button className="bg-orange-500 hover:bg-orange-600 text-white p-2.5 rounded-xl transition-colors shadow-lg shadow-orange-500/20">
+                <button
+                  type="submit"
+                  className="bg-orange-500 hover:bg-orange-600 text-white p-2.5 rounded-xl transition-colors shadow-lg shadow-orange-500/20"
+                >
                   <ArrowRight className="w-5 h-5" />
                 </button>
-              </div>
+              </form>
+
+              {/* Success Message */}
+              <AnimatePresence>
+                {isSubmitted && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-center gap-2 mt-3 text-sm text-orange-400 font-medium"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Thanks for subscribing!</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -70,16 +108,28 @@ export default function Footer() {
               <li>1-800-CIVIC-APP</li>
               <li>123 Smart City Ave, Tech District</li>
             </ul>
-            
+
             <div className="flex gap-4">
-              <a href="#" className="p-2 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:text-orange-500 hover:border-orange-500/50 transition-all shadow-sm">
-                <Globe className="w-5 h-5" />
+              {/* Twitter SVG Custom Clean Asset */}
+              <a href="#" aria-label="Twitter" className="p-2.5 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:text-orange-500 hover:border-orange-500/50 transition-all shadow-sm flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                  <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>
+                </svg>
               </a>
-              <a href="#" className="p-2 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:text-orange-500 hover:border-orange-500/50 transition-all shadow-sm">
-                <Globe className="w-5 h-5" />
+              {/* GitHub SVG Custom Clean Asset */}
+              <a href="#" aria-label="Github" className="p-2.5 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:text-orange-500 hover:border-orange-500/50 transition-all shadow-sm flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                  <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
+                  <path d="M9 18c-4.51 2-5-2-7-2"/>
+                </svg>
               </a>
-              <a href="#" className="p-2 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:text-orange-500 hover:border-orange-500/50 transition-all shadow-sm">
-                <Globe className="w-5 h-5" />
+              {/* LinkedIn SVG Custom Clean Asset */}
+              <a href="#" aria-label="LinkedIn" className="p-2.5 bg-white/5 border border-white/10 rounded-lg text-slate-400 hover:text-orange-500 hover:border-orange-500/50 transition-all shadow-sm flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                  <rect x="2" y="9" width="4" height="12"/>
+                  <circle cx="4" cy="4" r="2"/>
+                </svg>
               </a>
             </div>
           </div>
