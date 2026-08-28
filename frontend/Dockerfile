@@ -3,11 +3,11 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Optimize layer caching by copying package manifests first
-COPY package*.json ./
+COPY frontend/package*.json ./
 RUN npm ci || npm install
 
 # Copy source and build
-COPY . .
+COPY frontend/ .
 RUN npm run build
 
 # Stage 2: Serve
