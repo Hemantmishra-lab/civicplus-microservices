@@ -5,20 +5,25 @@ WORKDIR /app
 # Optimize layer caching: Copy root pom.xml
 COPY pom.xml .
 
-# Create placeholder directories to pass Maven module validation
-RUN mkdir config-server discovery-server api-gateway auth-service user-service complaint-service department-service media-service notification-service analytics-service common-library
-
-# Optimize layer caching: Copy common-library and build it first
+# Copy all child module POMs to satisfy Maven reactor validation
 COPY common-library/pom.xml common-library/
-COPY common-library/src common-library/src
-RUN --mount=type=cache,target=/root/.m2 mvn -pl common-library clean install -DskipTests
-
-# Copy specific service pom and resolve dependencies
+COPY config-server/pom.xml config-server/
+COPY discovery-server/pom.xml discovery-server/
+COPY api-gateway/pom.xml api-gateway/
+COPY auth-service/pom.xml auth-service/
+COPY user-service/pom.xml user-service/
 COPY complaint-service/pom.xml complaint-service/
+COPY department-service/pom.xml department-service/
+COPY media-service/pom.xml media-service/
+COPY notification-service/pom.xml notification-service/
+COPY analytics-service/pom.xml analytics-service/
+
+# Copy source code only for the target service and shared library
+COPY common-library/src common-library/src
 COPY complaint-service/src complaint-service/src
 
-# Build the specific service
-RUN --mount=type=cache,target=/root/.m2 mvn -pl complaint-service clean package -DskipTests
+# Build the specific service and its dependencies (-am flag builds common-library automatically)
+RUN --mount=type=cache,target=/root/.m2 mvn -pl complaint-service -am clean package -DskipTests
 
 # Stage 2: Serve
 FROM eclipse-temurin:21-jre-alpine
