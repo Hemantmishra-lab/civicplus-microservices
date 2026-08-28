@@ -59,37 +59,37 @@ jobs:
       - name: Build and Push Images to Docker Hub
         run: |
           # 1. Core Cloud Services
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:config-server ./config-server
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:config-server -f config-server/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:config-server
-          
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:discovery-server ./discovery-server
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:discovery-server -f discovery-server/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:discovery-server
-          
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:api-gateway ./api-gateway
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:api-gateway -f api-gateway/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:api-gateway
-          
+
           # 2. Domain Microservices
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:auth-service ./auth-service
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:auth-service -f auth-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:auth-service
-          
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:user-service ./user-service
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:user-service -f user-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:user-service
-          
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:complaint-service ./complaint-service
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:complaint-service -f complaint-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:complaint-service
-          
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:department-service ./department-service
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:department-service -f department-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:department-service
-          
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:media-service ./media-service
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:media-service -f media-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:media-service
-          
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:notification-service ./notification-service
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:notification-service -f notification-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:notification-service
-          
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:analytics-service ./analytics-service
+
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:analytics-service -f analytics-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:analytics-service
-          
+
           # 3. Frontend
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:frontend ./frontend
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:frontend -f frontend/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:frontend
