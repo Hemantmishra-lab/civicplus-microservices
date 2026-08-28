@@ -5,6 +5,9 @@ WORKDIR /app
 # Optimize layer caching: Copy root pom.xml
 COPY pom.xml .
 
+# Create placeholder directories to pass Maven module validation
+RUN mkdir config-server discovery-server api-gateway auth-service user-service complaint-service department-service media-service notification-service analytics-service common-library
+
 # Optimize layer caching: Copy common-library and build it first
 COPY common-library/pom.xml common-library/
 COPY common-library/src common-library/src
