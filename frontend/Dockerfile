@@ -3,7 +3,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Optimize layer caching by copying package manifests first
-COPY package*.json ./
+COPY package.json package-lock.json* ./
 RUN npm ci || npm install
 
 # Copy source and build
