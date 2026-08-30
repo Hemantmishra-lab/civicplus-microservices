@@ -408,6 +408,21 @@ To validate system resilience under peak concurrency, stress testing was execute
 > *By decoupling ingestion via Kafka queues, the backend safely handled peak stress—slashing errors to **2.61%** while increasing throughput by **60%**.*
 ---
 
+
+## 📊 Observability & Performance Monitoring
+
+Real-time application performance monitoring (APM), telemetry, and JVM health metrics are collected across all 8 microservices using **Prometheus** metrics scrapers and visualized through **Grafana** dashboards.
+
+### API Gateway Live Performance & JVM Telemetry
+![API Gateway Grafana Dashboard](docs/API_Gateway_Grafana.png)
+
+#### Key Observability Capabilities:
+* **Per-Service Metrics Isolation:** Enables live filtering across microservices (`api-gateway`, `auth-service`, `complaint-service`, etc.) using dynamic Micrometer metric tags (`application=${spring.application.name}`).
+* **JVM Heap & Non-Heap Telemetry:** Live monitoring of Garbage Collection (GC) cycles across Eden Space, Old Gen, and Survivor Space, maintaining optimal memory usage (16.9% Heap utilization at idle).
+* **System Load & Thread Pools:** Monitors active CPU core utilization, file descriptors, and HikariCP connection pools to prevent thread starvation under concurrent loads.
+* **Health & Uptime Tracking:** Tracks microservice uptime and instant restart detection to ensure system reliability across distributed nodes.
+
+  
 ## 5. Real-Time Notifications
 
 Notification Service integrates:
