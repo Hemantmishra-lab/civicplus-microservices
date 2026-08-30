@@ -90,6 +90,6 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:analytics-service -f analytics-service/Dockerfile .
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:analytics-service
 
-          # 3. Frontend
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:frontend -f frontend/Dockerfile .
+          # 3. Frontend (Updated context to ./frontend)
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:frontend -f frontend/Dockerfile ./frontend
           docker push ${{ secrets.DOCKER_USERNAME }}/civicplus-repo:frontend
