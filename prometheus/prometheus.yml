@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'civicplus-microservices'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - 'api-gateway:8080'
+          - 'auth-service:8081'
+          - 'user-service:8082'
+          - 'complaint-service:8083'
+          - 'department-service:8084'
+          - 'analytics-service:8085'
+          - 'media-service:8086'
+          - 'notification-service:8087'

@@ -23,6 +23,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/v1/notifications/ws-complaints/**").permitAll() // Allow WebSocket connections bypass
                         .anyRequest().authenticated()
                 )

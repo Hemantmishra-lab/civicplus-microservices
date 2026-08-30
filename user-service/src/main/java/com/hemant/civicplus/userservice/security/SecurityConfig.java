@@ -23,6 +23,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/uploads/**", "/api/v1/users/profile/nearest", "/api/v1/users/profile/internal/**").permitAll()
                         .anyRequest().authenticated()
                 )

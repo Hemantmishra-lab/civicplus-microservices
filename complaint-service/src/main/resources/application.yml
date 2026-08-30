@@ -42,3 +42,17 @@ jwt:
 incident:
   messaging:
     mode: ${INCIDENT_MESSAGING_MODE:kafka}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
