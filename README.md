@@ -406,8 +406,6 @@ To validate system resilience under peak concurrency, stress testing was execute
 **2. With Kafka (Event-Buffered Asynchronous Streaming)**
 ![JMeter Test With Kafka](docs/results_without_kafka.png)
 > *By decoupling ingestion via Kafka queues, the backend safely handled peak stress—slashing errors to **2.61%** while increasing throughput by **60%**.*
----
-
 
 ## 📊 Observability & Performance Monitoring
 
@@ -422,7 +420,8 @@ Real-time application performance monitoring (APM), telemetry, and JVM health me
 * **System Load & Thread Pools:** Monitors active CPU core utilization, file descriptors, and HikariCP connection pools to prevent thread starvation under concurrent loads.
 * **Health & Uptime Tracking:** Tracks microservice uptime and instant restart detection to ensure system reliability across distributed nodes.
 
-  
+---
+
 ## 5. Real-Time Notifications
 
 Notification Service integrates:
