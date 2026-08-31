@@ -400,11 +400,11 @@ To validate system resilience under peak concurrency, stress testing was execute
 #### JMeter Execution Benchmarks
 
 **1. Without Kafka (Database Connection Overload & Failure Spikes)**
-![JMeter Test Without Kafka](docs/kafka_load_test_results.png)
+![JMeter Test Without Kafka](docs/results_without_kafka.png)
 > *Without Kafka, direct synchronous persistence caused severe thread contention, resulting in a **40.82% error rate** under high load.*
 
 **2. With Kafka (Event-Buffered Asynchronous Streaming)**
-![JMeter Test With Kafka](docs/results_without_kafka.png)
+![JMeter Test With Kafka](docs/kafka_load_test_results.png)
 > *By decoupling ingestion via Kafka queues, the backend safely handled peak stress—slashing errors to **2.61%** while increasing throughput by **60%**.*
 
 ## 📊 Observability & Performance Monitoring
