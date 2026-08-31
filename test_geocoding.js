@@ -92,7 +92,7 @@ async function runTest() {
                 console.log(`⚠️ ASSIGNED, but to officer ${complaint.assignedTo}, not the one we just created (${officerProfile.userId}). Maybe there was another closer officer in DB.`);
             }
         } else {
-            console.log("❌ FAILED! Complaint was not auto-assigned. assignedTo is null.");
+            console.log("FAILED! Complaint was not auto-assigned. assignedTo is null.");
         }
 
     } catch (e) {

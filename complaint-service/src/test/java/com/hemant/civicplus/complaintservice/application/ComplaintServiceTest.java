@@ -27,6 +27,9 @@ class ComplaintServiceTest {
     @InjectMocks
     private ComplaintService complaintService;
 
+    @Mock
+    private CacheKeyGenerator cacheKeyGenerator;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
