@@ -137,7 +137,7 @@ export default function Footer() {
               </a>
               {/* LinkedIn SVG Custom Clean Asset */}
               <a
-                href="https://www.linkedin.com/in/hemant-mishra-78a8083ba/"
+                href="https://www.linkedin.com/in/hemantmishra26/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
