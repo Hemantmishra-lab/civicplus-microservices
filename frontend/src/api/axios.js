@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const API = axios.create({
-  baseURL: 'http://localhost:8080', // Gateway port
+  baseURL: 'http://13.210.175.10:8080',
   headers: {
     'Content-Type': 'application/json',
   },
