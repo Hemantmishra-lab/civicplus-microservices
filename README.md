@@ -654,15 +654,20 @@ http://localhost:8080
 
 ---
 
-# 🔌 WebSocket / STOMP
+### 🔌 Real-Time Communication via WebSocket & STOMP
 
-Notification Service exposes the STOMP WebSocket endpoint:
+To eliminate full-page reloads and polling overhead, `notification-service` streams asynchronous events directly to connected clients over WebSockets.
 
-```text
-/api/v1/notifications/ws-complaints
-```
+#### Configuration & Endpoints
+* **STOMP Endpoint:** `/api/v1/notifications/ws-complaints` *(SockJS enabled for fallback compatibility)*
+* **Broker Prefix:** `/topic`
+* **Application Destination Prefix:** `/app`
+* **User Status Destination:** `/topic/status/{userId}` *(e.g., `/topic/status/42`)*
 
-SockJS is enabled for client compatibility.
+#### Real-Time Execution Proof
+When an officer modifies a complaint status (`PUT /status`), an event flows through Apache Kafka into the `notification-service`, which instantly pushes a payload over STOMP to the citizen's active session without page refresh.
+
+![Real-time Update Demo](docs/realtime_update.gif)
 
 ### Broker Prefix
 
