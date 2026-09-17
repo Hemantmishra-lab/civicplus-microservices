@@ -562,10 +562,40 @@ civicplus-bucket
 
 ## 11. Redis
 
-Redis is included in the Docker Compose infrastructure and is configured for the complaint-service environment.
+### 🛠️ Key Steps & Implementation
 
-It provides an infrastructure layer for cache-oriented workloads and can reduce repeated database access for suitable operations.
+1. **Dependencies:** Added `spring-boot-starter-data-redis` and Cache Management dependencies to the project[cite: 1].
+2. **Configuration:** 
+   - Configured Redis connection parameters (host, port, and connection pooling) in `application.yml`[cite: 1].
+   - Created `RedisConfig` class to configure `RedisCacheManager`, `RedisConnectionFactory`, and custom JSON serializers for efficient payload handling[cite: 1].
+3. **Cache Key Strategy:** Designed a custom `CacheKeyGenerator` component to construct deterministic, collision-free cache keys dynamically based on user identity, search filters, and query context (e.g., `civic:issues:citizen:1`, `civic:issues:all`)[cite: 1].
+4. **Service Layer & TTL Strategy:** Integrated caching annotations (`@Cacheable`, `@CacheEvict`) and cache management across the service layer with configured Time-To-Live (TTL) policies to automatically expire stale entries[cite: 1].
+5. **Controller Integration & Automated Eviction:** Configured read endpoints to perform a cache-first lookup. On a "cache miss", requests hit the database and populate Redis; on state-altering operations (`POST /complaints`, `PUT /status`), automated `@CacheEvict` invalidates outdated cached lists to guarantee data integrity[cite: 1].
 
+---
+
+### 📊 Performance Benchmarks & Validation
+
+Real-time API testing (`/api/v1/complaints/citizen`) under authenticated JWT conditions produced the following latency metrics:
+
+| Execution State | Response Time | Data Source | Generated Cache Key |
+| :--- | :--- | :--- | :--- |
+| **Cache Miss (1st Request)** | `468 ms` | PostgreSQL Database Query | `civic:issues:citizen:1`[cite: 1] |
+| **Cache Hit (2nd Request)** | `17 ms` | Redis In-Memory Cache | `civic:issues:citizen:1`[cite: 1] |
+| **Performance Improvement** | **96.3% Reduction** | **~27.5x Speedup** | Zero Database I/O |
+
+---
+
+### 🖼️ Benchmark Evidence
+
+#### 1. First Request: Cache Miss (Database Hit - 468 ms)
+![Cache Miss](docs/CacheMiss.png)
+
+#### 2. Second Request: Cache Hit (In-Memory Execution - 17 ms)
+![Cache Hit](docs/CacheHit.png)
+
+#### 3. Redis Terminal Inspection (Custom Key Generation Proof)
+![Redis Terminal Keys](docs/RedisTerminal.png)
 ---
 
 # 📡 REST API Reference
