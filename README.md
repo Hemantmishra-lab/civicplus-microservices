@@ -28,6 +28,18 @@ The architecture is designed around **separation of concerns, loose coupling, sc
 
 ---
 
+---
+
+## 📺 Live AWS Deployment Walkthrough
+
+Watch a 4-minute walkthrough demonstrating the live deployment of CivicPlus hosted on AWS EC2, featuring service discovery, real-time WebSocket notifications, and Kafka event streaming:
+
+[![CivicPlus AWS Deployment Demo](https://img.youtube.com/vi/LUz03xFS7rc/0.jpg)](https://youtu.be/LUz03xFS7rc)
+
+> *Click the thumbnail above to watch the full system demonstration on YouTube.*
+
+---
+
 # 🏗️ System Architecture
 
 
